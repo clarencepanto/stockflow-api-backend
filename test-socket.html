@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO Test Client</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #1a1a1a;
+        color: #fff;
+      }
+      .event {
+        background: #2a2a2a;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border-left: 4px solid #00ff88;
+      }
+      .event.order {
+        border-left-color: #ff6b6b;
+      }
+      .status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .status.connected {
+        background: #00ff88;
+        color: #000;
+      }
+      .status.disconnected {
+        background: #ff6b6b;
+        color: #fff;
+      }
+      h1 {
+        color: #00ff88;
+      }
+      h3 {
+        margin: 5px 0;
+      }
+      .timestamp {
+        color: #888;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔌 Socket.IO Real-time Test</h1>
+    <p>
+      Connection:
+      <span class="status disconnected" id="status">Disconnected</span>
+    </p>
+
+    <h2>📊 Real-time Events:</h2>
+    <div id="events"></div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+      const socket = io("http://localhost:3000");
+      const statusEl = document.getElementById("status");
+      const eventsEl = document.getElementById("events");
+
+      socket.on("connect", () => {
+        console.log("Connected to server!");
+        statusEl.textContent = "Connected";
+        statusEl.className = "status connected";
+        addEvent("system", "Connected to server", "success");
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Disconnected from server");
+        statusEl.textContent = "Disconnected";
+        statusEl.className = "status disconnected";
+        addEvent("system", "Disconnected from server", "error");
+      });
+
+      // Listen for stock updates
+      socket.on("stock:updated", (data) => {
+        console.log("Stock updated:", data);
+        addEvent(
+          "stock",
+          `
+        <h3>📦 Stock Updated: ${data.productName}</h3>
+        <p><strong>Type:</strong> ${data.type}</p>
+        <p><strong>Change:</strong> ${data.change > 0 ? "+" : ""}${
+            data.change
+          }</p>
+        <p><strong>Old Stock:</strong> ${
+          data.oldStock
+        } → <strong>New Stock:</strong> ${data.newStock}</p>
+        <p><strong>Reason:</strong> ${data.reason || "N/A"}</p>
+      `
+        );
+      });
+
+      // Listen for new orders
+      socket.on("order:created", (data) => {
+        console.log("Order created:", data);
+        addEvent(
+          "order",
+          `
+        <h3>🛒 New Order Created!</h3>
+        <p><strong>Order ID:</strong> ${data.orderId}</p>
+        <p><strong>Customer:</strong> ${data.userName}</p>
+        <p><strong>Total:</strong> $${data.totalAmount.toFixed(2)}</p>
+        <p><strong>Items:</strong> ${data.itemCount}</p>
+        <p><strong>Status:</strong> ${data.status}</p>
+      `
+        );
+      });
+
+      function addEvent(type, content, style = "") {
+        const eventDiv = document.createElement("div");
+        eventDiv.className = `event ${type}`;
+        eventDiv.innerHTML = `
+        ${content}
+        <div class="timestamp">${new Date().toLocaleTimeString()}</div>
+      `;
+        eventsEl.insertBefore(eventDiv, eventsEl.firstChild);
+      }
+    </script>
+  </body>
+</html>
