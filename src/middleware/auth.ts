@@ -27,7 +27,7 @@ export const authenticate = (
 
 // check to see if roles are allowd
 
-export const authorize = (...allowedRoles: Role[]) => {
+export const authorize = (...allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import prisma from "../utils/prisma";
 import { getIO } from "../utils/socket";
+import { PrismaClient } from "@prisma/client";
 
 const createAdjustmentSchema = z.object({
   productId: z.string().uuid(),
@@ -54,32 +55,44 @@ export const createAdjustment = async (req: Request, res: Response) => {
     }
 
     // Create adjustment and update product stock in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const adjustment = await tx.inventoryAdjustment.create({
-        data: {
-          productId: data.productId,
-          userId,
-          quantity: data.quantity,
-          type: data.type,
-          reason: data.reason,
-        },
-        include: {
-          product: {
-            select: { name: true, sku: true },
+    const result = await prisma.$transaction(
+      async (
+        tx: Omit<
+          PrismaClient,
+          | "$connect"
+          | "$disconnect"
+          | "$on"
+          | "$transaction"
+          | "$use"
+          | "$extends"
+        >
+      ) => {
+        const adjustment = await tx.inventoryAdjustment.create({
+          data: {
+            productId: data.productId,
+            userId,
+            quantity: data.quantity,
+            type: data.type,
+            reason: data.reason,
           },
-          user: { select: { name: true, email: true } },
-        },
-      });
-      //update product stock
-      const updatedProduct = await tx.product.update({
-        where: { id: data.productId },
-        data: {
-          stockLevel: newStockLevel,
-        },
-      });
+          include: {
+            product: {
+              select: { name: true, sku: true },
+            },
+            user: { select: { name: true, email: true } },
+          },
+        });
+        //update product stock
+        const updatedProduct = await tx.product.update({
+          where: { id: data.productId },
+          data: {
+            stockLevel: newStockLevel,
+          },
+        });
 
-      return { adjustment, updatedProduct };
-    });
+        return { adjustment, updatedProduct };
+      }
+    );
 
     try {
       const io = getIO();

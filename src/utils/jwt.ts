@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { Role } from "@prisma/client";
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "fallback-secret-change-in-production";
@@ -7,7 +6,7 @@ const JWT_SECRET =
 export interface JWTPayload {
   id: string;
   email: string;
-  role: Role;
+  role: string;
 }
 
 export const generateToken = (payload: JWTPayload): string => {

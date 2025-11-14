@@ -1,5 +1,4 @@
-// connects typescript, database and express
-import { Role } from "@prisma/client";
+import { Request } from "express";
 
 declare global {
   namespace Express {
@@ -7,8 +6,10 @@ declare global {
       user?: {
         id: string;
         email: string;
-        role: Role;
+        role: string;
       };
     }
   }
 }
+
+export {}; // This is important - makes it a module
