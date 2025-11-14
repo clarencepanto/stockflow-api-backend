@@ -2,7 +2,7 @@
 
 A comprehensive inventory management and orders API with real-time updates.
 
-![CI/CD](https://github.com/YOUR-USERNAME/stockflow-api/workflows/CI%2FCD%20Pipeline/badge.svg)
+![CI/CD](https://github.com/clarencepanto/stockflow-api/workflows/CI%2FCD%20Pipeline/badge.svg)
 
 ## 🚀 Features
 
@@ -208,7 +208,7 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
+Clarence Panto
 
 ## 🙏 Acknowledgments
 
