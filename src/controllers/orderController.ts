@@ -18,7 +18,6 @@ const updateOrderStatusSchema = z.object({
 });
 
 // Create order
-
 export const createOrder = async (req: Request, res: Response) => {
   console.log("order called");
 
@@ -28,9 +27,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
     // step 1: validate all products exist and have enough stocks
     const productIds = data.items.map((item) => item.productId);
-
     const uniqueProductIds = [...new Set(productIds)];
-
     const products = await prisma.product.findMany({
       where: { id: { in: uniqueProductIds } },
     });
@@ -47,7 +44,7 @@ export const createOrder = async (req: Request, res: Response) => {
     }
 
     for (const [productId, totalQuantity] of productQuantities) {
-      const product = products.find((p) => p.id === productId);
+      const product = products.find((p: any) => p.id === productId);
       if (!product) continue;
 
       if (product.stockLevel < totalQuantity) {
@@ -63,7 +60,12 @@ export const createOrder = async (req: Request, res: Response) => {
     // step 3 : calculate total amount
     let totalAmount = 0;
     const orderItemsData = data.items.map((item) => {
-      const product = products.find((p) => p.id === item.productId)!;
+      const product = products.find((p: any) => p.id === item.productId);
+
+      if (!product) {
+        throw new Error(`Product ${item.productId} not found`);
+      }
+
       const itemTotal = product.price * item.quantity;
       totalAmount += itemTotal;
 
@@ -75,7 +77,8 @@ export const createOrder = async (req: Request, res: Response) => {
     });
 
     // step 4: create order with items and update stock in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
+      // ← Changed this line
       // create the order
       const order = await tx.order.create({
         data: {
@@ -94,14 +97,13 @@ export const createOrder = async (req: Request, res: Response) => {
               },
             },
           },
-
           user: {
             select: { name: true, email: true },
           },
         },
       });
-      // Update stock levels for each product
 
+      // Update stock levels for each product
       for (const item of data.items) {
         await tx.product.update({
           where: { id: item.productId },
@@ -113,7 +115,6 @@ export const createOrder = async (req: Request, res: Response) => {
         });
 
         // create inventory adjustment record
-
         await tx.inventoryAdjustment.create({
           data: {
             productId: item.productId,
@@ -159,7 +160,7 @@ export const getOrders = async (req: Request, res: Response) => {
   console.log("Getorders called");
 
   try {
-    const { page = "1", limit = "10", status, userId } = req.params;
+    const { page = "1", limit = "10", status, userId } = req.query; // Changed from req.params to req.query
 
     const pageNum = parseInt(page as string);
     const limitNum = parseInt(limit as string);
@@ -242,7 +243,6 @@ export const getOrderById = async (req: Request, res: Response) => {
 };
 
 // update order status
-
 export const updateOrderStatus = async (req: Request, res: Response) => {
   console.log("update status called");
 
@@ -304,7 +304,6 @@ export const getTodaysOrders = async (req: Request, res: Response) => {
           lte: endOfDay,
         },
       },
-
       include: {
         orderItems: {
           include: {
@@ -317,7 +316,7 @@ export const getTodaysOrders = async (req: Request, res: Response) => {
     });
 
     const totalRevenue = orders.reduce(
-      (sum, order) => sum + order.totalAmount,
+      (sum: number, order: any) => sum + order.totalAmount, // ← Changed this line
       0
     );
 
