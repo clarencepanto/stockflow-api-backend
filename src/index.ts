@@ -14,34 +14,42 @@ import { initializeSocket } from "./utils/socket";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const httpServer = http.createServer(app);
-const io = initializeSocket(httpServer);
-console.log("Socket.io initialized");
-
-// ✅ Manual CORS headers FIRST (before any other middleware)
+// ✅ CORS BEFORE ANYTHING ELSE
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+  res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, PATCH, DELETE, OPTIONS"
   );
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
 
-  // Handle preflight
+  // Handle preflight immediately
   if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
+    console.log(`✅ OPTIONS preflight: ${req.path}`);
+    return res.status(204).end();
   }
 
   next();
 });
 
+// Now initialize Socket.IO
+const httpServer = http.createServer(app);
+const io = initializeSocket(httpServer);
+console.log("Socket.io initialized");
+
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// CORS middleware (as backup)
-app.use(cors({ origin: true, credentials: true }));
 
 // Log all requests
 app.use((req, res, next) => {
