@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config(); // ← Keep this one
+dotenv.config();
 
 import express from "express";
 import cors from "cors";
@@ -11,19 +11,14 @@ import orderRoutes from "./routes/orderRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import { initializeSocket } from "./utils/socket";
 
-// dotenv.config(); // ← Remove this duplicate
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Create HTTP server for Socket.IO
 const httpServer = http.createServer(app);
-
-// Initialize Socket.IO
 const io = initializeSocket(httpServer);
 console.log("Socket.io initialized");
 
-// Middleware - IMPORTANT ORDER!
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,6 +28,9 @@ app.use(
     credentials: true,
   })
 );
+
+// ✅ ADD THIS: Handle preflight OPTIONS requests explicitly
+app.options("*", cors());
 
 // Log all requests
 app.use((req, res, next) => {
@@ -54,7 +52,7 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// 404 handler (MUST BE LAST!)
+// 404 handler
 app.use((req, res) => {
   console.log(`❌ 404 Not Found: ${req.method} ${req.path}`);
   res.status(404).json({
