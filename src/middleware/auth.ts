@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
-import { Role } from "@prisma/client";
 
 // checks to see if token is valid
 export const authenticate = (

@@ -249,20 +249,69 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = updateOrderStatusSchema.parse(req.body);
+    const userId = req.user!.id; // ← Add this line at the top of the function
 
     const order = await prisma.order.findUnique({
       where: { id },
+      include: {
+        orderItems: true,
+      },
     });
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    const updatedOrder = await prisma.order.update({
+    // check if we're cancelling a non-cancelled order
+    const wasCancelled = order.status === "CANCELLED";
+    const isCancelling = data.status === "CANCELLED";
+
+    // If cancelling an order that wasn't cancelled before , restore stock
+    if (isCancelling && !wasCancelled) {
+      await prisma.$transaction(async (tx: any) => {
+        // Restore stock for each item
+        for (const item of order.orderItems) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockLevel: {
+                increment: item.quantity, // add stock back
+              },
+            },
+          });
+
+          // create inventory adjustment record (in)
+          await tx.inventoryAdjustment.create({
+            data: {
+              productId: item.productId,
+              userId,
+              quantity: item.quantity,
+              type: "IN",
+              reason: `Order ${order.id} cancelled - stock returned`,
+            },
+          });
+        }
+
+        // update order status
+        await tx.order.update({
+          where: { id },
+          data: {
+            status: data.status,
+          },
+        });
+      });
+    } else {
+      // just update status (not cancelling , or already cancelled)
+      await prisma.order.update({
+        where: { id },
+        data: {
+          status: data.status,
+        },
+      });
+    }
+
+    const updatedOrder = await prisma.order.findUnique({
       where: { id },
-      data: {
-        status: data.status,
-      },
       include: {
         user: {
           select: { name: true, email: true },

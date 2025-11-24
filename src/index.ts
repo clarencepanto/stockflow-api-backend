@@ -9,6 +9,7 @@ import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import { initializeSocket } from "./utils/socket";
 
 dotenv.config();
@@ -58,6 +59,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
 
 app.use("/api/orders", orderRoutes);
+
+app.use("/api/dashboard", dashboardRoutes);
 
 // 404 handler (MUST BE LAST!)
 app.use((req, res) => {

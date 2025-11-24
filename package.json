@@ -10,6 +10,7 @@
     "prisma:migrate": "dotenv -e .env -- prisma migrate dev",
     "prisma:generate": "dotenv -e .env -- prisma generate",
     "prisma:studio": "dotenv -e .env -- prisma studio",
+    "seed": "npx prisma db seed",
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -17,9 +18,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "^6.18.0",
+    "@prisma/client": "^6.19.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
