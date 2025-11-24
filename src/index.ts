@@ -25,7 +25,15 @@ const io = initializeSocket(httpServer);
 console.log("Socket.io initailized");
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3001",
+      "https://stockflow-api-backend-production.up.railway.app", // ← Add your Vercel URL
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Log all requests
