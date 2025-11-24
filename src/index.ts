@@ -3,8 +3,8 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import http from "http";
-import swaggerUI from "swagger-ui-express";
-const { swaggerSpec } = require("./config/swagger");
+// import swaggerUI from "swagger-ui-express";
+// const { swaggerSpec } = require("./config/swagger");
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes";
@@ -34,14 +34,14 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  "/api-docs",
-  swaggerUI.serve,
-  swaggerUI.setup(swaggerSpec, {
-    customCss: ".swagger-ui .topbar {display: none}",
-    customSiteTitle: "StockFlow API Docs",
-  })
-);
+// app.use(
+//   "/api-docs",
+//   swaggerUI.serve,
+//   swaggerUI.setup(swaggerSpec, {
+//     customCss: ".swagger-ui .topbar {display: none}",
+//     customSiteTitle: "StockFlow API Docs",
+//   })
+// );
 
 // Test route (BEFORE API routes)
 app.get("/", (req, res) => {
