@@ -28,11 +28,7 @@ app.use(
 // Socket.IO CORS
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3001",
-      "https://stockflow-api-frontend.vercel.app",
-    ],
-    methods: ["GET", "POST"],
+    origin: true, // ← Allows ALL origins
     credentials: true,
   },
 });
