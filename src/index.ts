@@ -29,9 +29,12 @@ app.use(
   cors({
     origin: [
       "http://localhost:3001",
-      "https://stockflow-api-backend-production.up.railway.app", // ← Add your Vercel URL
+      "https://stockflow-api-frontend.vercel.app",
+      "https://stockflow-api-frontend.vercel.app/",
     ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
